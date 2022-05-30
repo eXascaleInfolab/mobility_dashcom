@@ -1,6 +1,8 @@
 # Dashcom mobility
 
-Analysis of the mobility data from Dashcom. User's coordinates time series are processes and the result outputs two analytical metrics: 1) user's current position and whether it is inside the specified room 2) analysis of movement patters between readings (distance, time, speed) to validate the consistency and quality of the data and warn about potential issues.
+Analysis of the mobility data from Dashcom. User's coordinates time series are processed and the result outputs two analytical metrics:
+1. User's current position and whether it is inside the specified room 
+2. Analysis of the movement patterns between readings (distance, time, speed) to validate the consistency and quality of the data and warn about potential issues.
 
 ## Prerequisites
 
@@ -23,12 +25,12 @@ ___
 ## Running the analysis
 
 ```bash
-    git clone https://github.com/eXascaleInfolab/mobility_dashcom.git mobility_dashcom
-    cd mobility_dashcom
-    dotnet-script dashcom_analysis.csx data/recording_2022-03-11.txt
+ git clone https://github.com/eXascaleInfolab/mobility_dashcom.git mobility_dashcom
+ cd mobility_dashcom
+ dotnet-script dashcom_analysis.csx data/recording_2022-03-11.txt
 ```
-- `data/recording_2022-03-11.txt` is the log file you want to analyse.
-- Two output files should be created: `data/recording_2022-03-11.records.txt` (further refered to as 'Records') and `data/recording_2022-03-11.relative.txt` (further: 'Relative').
+- `data/recording_2022-03-11.txt`: the log file you want to analyse.
+- Two output files will be created: `data/recording_2022-03-11.records.txt` (further refered to as 'Records') and `data/recording_2022-03-11.relative.txt` (further: 'Relative').
 - Optionally, a `room.txt` file can be specified (an example is provided, see [remarks](#remarks) for how it should be structured):
 ```bash
     dotnet-script dashcom_analysis.csx data/recording_2022-05-30.txt room/room.txt
@@ -46,7 +48,7 @@ ___
 ```11:32:01: @0.918195/0.292566 -- 4.3435```
     - "11:32:01" is the timestamp of the reading.
     - "@0.918195/0.292566" are the coordinates (adapted to remove first digits that are always the same).
-    - "4.3435" is the geo distance (in meters, see [tools](#tools)) from the "base position", which is chosen from the first entry in the input file.
+    - "4.3435" is the geo distance (in meters, see [techniques](#techniques)) from the "base position", which is chosen from the first entry in the input file.
     - The line can also contain other information, for example:
         - "[INSIDE:ROOM]" or "[INSIDE:BASE]" - is displayed if the current coordinates are within the room. If `room.txt` is provided, then it determines the position based on room's box coordinates (and says [:ROOM]). If not - the room is assumed to be a circle (radius = 5m) with the center at the base position (showed [:BASE]).
 
@@ -59,11 +61,11 @@ ___
     - "1.3843 m/s" is the person's speed estimated from the distance and time.
     - The line can also contain other information, for example:
         - "[INFO:LONG]" - is displayed if the time since the last reading has exceeded 1 minute, this normally indicates long idle time without movement.
-        - "[WARN:SPEED]" - is displayed if registered speed is higher than 2.5 m/s, since it's at the limit of human walking speed, usually it represents inaccuracies of readings (different base stations etc).
+        - "[WARN:SPEED]" - is displayed if registered speed is higher than 2.5 m/s, since it is at the limit of human walking speed, usually it represents inaccuracies of readings (different base stations etc).
 
 ___
 
-### Tools:
+### Techniques:
 
 - Geographical distance calculation from the coordinates, implementation according to "Spherical Earth projected to a plane" formula: https://en.wikipedia.org/wiki/Geographical_distance#Spherical_Earth_projected_to_a_plane
 - Detection of a point inside a convext polygon.
@@ -78,7 +80,7 @@ ___
         - Current implementation assumes a convex polygon, but other more sophisticated methods can be used for non-convex rooms. Circular rooms can be handled using the radius of a base point method.
         - File `room.txt` has to contain a list of coordinates in the format of `latitude,longitude`, one per line, at least three points. Points always have to be specified clockwise or counterclockwise, in other words - no lines should cross.
 
-- The information that can be extracted using this analysis is solid, but it is only as good as the quality of the data. There are a few technical limitations:
+- The quality of the information that can be extracted using this analysis depends on the quality of the data. There are a few technical limitations:
     - For example `2022-03-11` has a lot of anomalies. It's possible to detect some of them, we employ warnings about sudden positional jumps exceeding human walking speed and long periods of no updates to the position, but there is not much that can be done to correct them.
     - Sleeping devices seem to send no updates, which is not a problem for post-processing analysis, however this has to be addressed for a real-time analysis. Might be problematic to detect if the person is still in the room, or if a sleeping device was moved out.
     - Ultimately, an implementation of a system based on such readings has to be robust and should try to re-verify information though multiple channels (if possible) and use some time margins to make sure a reading is not a one-off.
