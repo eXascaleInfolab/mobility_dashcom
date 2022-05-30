@@ -13,7 +13,6 @@ ___
 
 ## Installation
 
-- Clone this repo.
 - Install latest version of .NET 6. Follow the instruction appropriate for your OS and platform at https://dotnet.microsoft.com/en-us/download/dotnet/6.0
 - Restart the terminal/console after finishing the installation.
 - Open terminal/console of your OS and type to install dotnet-script tool:
